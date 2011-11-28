@@ -3,9 +3,10 @@ import os
 
 import yaml
 
+from django.db import connection, models
 from django.contrib import admin
-from django.db import models
 from django.http import HttpResponse, HttpResponseRedirect
+from django.core.management import sql, color
 from django.core.urlresolvers import reverse
 from django.conf.urls.defaults import patterns
 from django.contrib.contenttypes.models import ContentType
@@ -58,28 +59,15 @@ def create_model(name, fields=None, app_label='', module='', options=None, admin
 
     return model
 
-#def add_url(url):
-    #if hasattr(app_urls,'urlpatterns'):
-        #urls = getattr(app_urls,'urlpatterns')
-        #urls += patterns('',
-            #(r'^admin/app/$', home)
-            #(r'^admin/app/(?P<object_id>.+)/$', home)
-            #(r'^admin/(?P<path>.*)$', home ),
-        #)
-        #print urls
-
 
 def install(model):
-    from django.core.management import sql, color
-    from django.db import connection
-
     style = color.no_style()
-
     cursor = connection.cursor()
     statements, pending = connection.creation.sql_create_model(model, style)
     print statements, pending
     for sql in statements:
         cursor.execute(sql)
+
 
 def home(request):
     din_models_yaml = yaml.load(open(os.path.join(PROJECT_ROOT,'db','init.ya')).read())
