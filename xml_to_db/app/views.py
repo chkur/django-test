@@ -3,16 +3,19 @@ import os
 
 import yaml
 
+
+from django import forms
 from django.db import connection, models
+from django.template import RequestContext
 from django.contrib import admin
+from django.shortcuts import render_to_response
 from django.http import HttpResponse, HttpResponseRedirect
 from django.core.management import sql, color
 from django.core.urlresolvers import reverse
 from django.conf.urls.defaults import patterns
-from django.contrib.contenttypes.models import ContentType
-from django.db.models.loading import cache 
+from django.core.context_processors import csrf
+from django.contrib.auth.decorators import login_required
 
-#from xml_to_db import urls as app_urls
 from settings import PROJECT_ROOT
 
 FIELD_TYPES = { 'int':models.IntegerField,
@@ -24,10 +27,10 @@ FIELD_TYPES = { 'int':models.IntegerField,
 yaml_models = {}
 
 
-class SomeField(models.IntegerField):
-    def __init__(self, *args, **kwargs):
-        super(SomeField, self).__init__()
-        #self.fields
+def get_csrf_context(request):
+    c = {}
+    c.update(csrf(request))
+    return RequestContext(request, c)
 
 
 def create_model(name, fields=None, app_label='', module='', options=None, admin_opts=None):
@@ -92,17 +95,35 @@ def create_yaml_models(request, din_models_yaml):
     request.session['yaml_models'] = yaml_models.keys()
     return yaml_models
 
-
+@login_required
 def home(request):
-    din_models_yaml = yaml.load(open(os.path.join(PROJECT_ROOT,'db','init.ya')).read())
-    myapp = models.get_app('app')
-    create_yaml_models(request, din_models_yaml)
 
+    class yaml_form(forms.Form):
+        file_ = forms.FileField()
+        
+    if request.method=='GET':
+        form = yaml_form()
+        return render_to_response('base.html',{
+                'form':form,
+                    }, get_csrf_context(request),
+                )
+    else:
+        form = yaml_form(request.POST, request.FILES)
+        if form.is_valid():
+            #din_models_yaml = yaml.load(open(os.path.join(PROJECT_ROOT,'db','init.ya')).read())
+            file_text = request.FILES['file_'].read()
+            print type(file_text)
+            din_models_yaml = yaml.load(file_text)
+            myapp = models.get_app('app')
+            create_yaml_models(request, din_models_yaml)
 
-    for yaml_model in yaml_models.values():
-        try:
-            install(yaml_model)
-        except:
-            print 'not installed'
+            for yaml_model in yaml_models.values():
+                try:
+                    install(yaml_model)
+                except:
+                    print 'not installed'
+
+            return HttpResponseRedirect('/admin/app/')
+
     
-    return HttpResponseRedirect('/admin/app/')
+    
