@@ -1,14 +1,11 @@
 #-*-encoding:utf-8-*-
 from app import models
+
 from django.http import HttpResponse, HttpResponseRedirect
-from django.template import RequestContext
 from django.shortcuts import render_to_response
 from django.db import connection, models
 from django.contrib import admin
 from django.shortcuts import render_to_response
-from django.template import RequestContext
-from django.contrib.admin.views.decorators import staff_member_required
-from django.contrib.admin import widgets, helpers
 from django.forms.models import ModelForm
 
 from views import yaml_models, get_csrf_context
@@ -36,9 +33,9 @@ def add_item(request, app_label, model_name):
             'change':False,
             'save_as':False,
             'has_delete_permission':False,
-            'has_add_permission':True,
+            'has_add_permission':False,
             'has_change_permission':False,
-            'add':True,
+            'add':False,
                 }, get_csrf_context(request),
             )
 
@@ -68,9 +65,9 @@ def edit_item(request, app_label, model_name, id):
             'change':True,
             'save_as':False,
             'has_delete_permission':False,
-            'has_add_permission':True,
+            'has_add_permission':False,
             'has_change_permission':False,
-            'add':True,
+            'add':False,
                 }, get_csrf_context(request),
             )
 
@@ -88,9 +85,9 @@ def view_model(request, app_label, model_name):
             'change':True,
             'save_as':False,
             'has_delete_permission':False,
-            'has_add_permission':True,
+            'has_add_permission':False,
             'has_change_permission':False,
-            'add':True,
+            'add':False,
                 }, get_csrf_context(request),
             )
 

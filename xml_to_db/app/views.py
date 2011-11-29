@@ -11,8 +11,6 @@ from django.contrib import admin
 from django.shortcuts import render_to_response
 from django.http import HttpResponse, HttpResponseRedirect
 from django.core.management import sql, color
-from django.core.urlresolvers import reverse
-from django.conf.urls.defaults import patterns
 from django.core.context_processors import csrf
 from django.contrib.auth.decorators import login_required
 
@@ -91,7 +89,7 @@ def create_yaml_models(request, din_models_yaml):
                                 options={'verbose_name_plural':value['title']})
         this_model = new_model()
         yaml_models[key] = this_model
-    request.session['yaml_models'] = yaml_models.keys()
+    #request.session['yaml_models'] = yaml_models.keys()
     return yaml_models
 
 @login_required
@@ -100,28 +98,39 @@ def home(request):
     class yaml_form(forms.Form):
         file_ = forms.FileField()
         
+    error = None
     if request.method=='GET':
         form = yaml_form()
-        return render_to_response('base.html',{
-                'form':form,
-                    }, get_csrf_context(request),
-                )
     else:
         form = yaml_form(request.POST, request.FILES)
         if form.is_valid():
-            #din_models_yaml = yaml.load(open(os.path.join(PROJECT_ROOT,'db','init.ya')).read())
             file_text = request.FILES['file_'].read()
-            din_models_yaml = yaml.load(file_text)
-            myapp = models.get_app('app')
-            create_yaml_models(request, din_models_yaml)
+            try:
+                din_models_yaml = yaml.load(file_text)
+            except:
+                return render_to_response('base.html',{
+                        'form':form,
+                        'error':u'Ошибка формата файла',
+                            }, get_csrf_context(request),
+                        )
+            try:
+                myapp = models.get_app('app')
+                create_yaml_models(request, din_models_yaml)
 
-            for yaml_model in yaml_models.values():
-                try:
-                    install(yaml_model)
-                except:
-                    print 'not installed'
+                for yaml_model in yaml_models.values():
+                    try:
+                        install(yaml_model)
+                    except:
+                        print 'not installed'
+            except:
+                error = u'Ошибка создания таблицы'
 
             return HttpResponseRedirect('/admin/app/')
+            
+    return render_to_response('base.html',{
+            'form':form,
+            'error':error,
+                }, get_csrf_context(request),
+            )
 
-    
-    
+            
