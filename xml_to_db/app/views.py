@@ -59,7 +59,6 @@ def create_model(name, fields=None, app_label='', module='', options=None, admin
 
     # Create the class, which automatically triggers ModelBase processing
     model = type(name, (models.Model,), attrs)
-    #print type(model)
 
     # Create an Admin class if admin options were provided
     #if admin_opts is not None:
@@ -112,7 +111,6 @@ def home(request):
         if form.is_valid():
             #din_models_yaml = yaml.load(open(os.path.join(PROJECT_ROOT,'db','init.ya')).read())
             file_text = request.FILES['file_'].read()
-            print type(file_text)
             din_models_yaml = yaml.load(file_text)
             myapp = models.get_app('app')
             create_yaml_models(request, din_models_yaml)
