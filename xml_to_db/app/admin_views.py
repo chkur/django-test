@@ -7,10 +7,11 @@ from django.db import connection, models
 from django.contrib import admin
 from django.shortcuts import render_to_response
 from django.forms.models import ModelForm
+from django.contrib.admin.views.decorators import staff_member_required
 
 from views import yaml_models, get_csrf_context
 
-
+@staff_member_required
 def add_item(request, app_label, model_name):
     yaml_model = models.get_model('app', model_name)
 
@@ -40,6 +41,7 @@ def add_item(request, app_label, model_name):
             )
 
 
+@staff_member_required
 def edit_item(request, app_label, model_name, id):
     yaml_model = models.get_model('app', model_name)
 
@@ -72,6 +74,7 @@ def edit_item(request, app_label, model_name, id):
             )
 
 
+@staff_member_required
 def view_model(request, app_label, model_name):
     yaml_model = models.get_model('app', model_name)
     rows = yaml_model.objects.all()
@@ -92,6 +95,7 @@ def view_model(request, app_label, model_name):
             )
 
 
+@staff_member_required
 def delete_item(request, app_label, model_name, id):
     yaml_model = models.get_model('app', model_name)
     item = yaml_model.objects.get(id=id)

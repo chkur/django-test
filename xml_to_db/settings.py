@@ -5,8 +5,8 @@ import sys
 from django.conf import settings  
 
 
-DEBUG = True
-TEMPLATE_DEBUG = DEBUG
+DEBUG = False
+TEMPLATE_DEBUG = False
 
 PROJECT_ROOT = os.path.dirname(__file__)
 
