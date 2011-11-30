@@ -96,7 +96,7 @@ def create_yaml_models(request, din_models_yaml):
 def home(request):
 
     class yaml_form(forms.Form):
-        file_ = forms.FileField()
+        file_ = forms.FileField(label=u'YAML-файл')
         
     error = None
     if request.method=='GET':
